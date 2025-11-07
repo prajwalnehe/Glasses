@@ -14,11 +14,12 @@ import MyOrders from "../pages/MyOrders.jsx";
 import Checkout from "../pages/Checkout.jsx";
 import ProtectedRoute from "../components/ProtectedRoute.jsx"; 
 import CategoryPage from "../pages/CategoryPage.jsx";
+import AdminLayout from "../components/AdminLayout.jsx";
+import AdminDashboard from "../pages/AdminDashboard.jsx";
+import AdminProducts from "../pages/AdminProducts.jsx";
+import AdminOrders from "../pages/AdminOrders.jsx";
 import { useUser } from "../context/UserContext.jsx";
 import { useCart } from "../context/CartContext.jsx";
-import AdminLayout from "../pages/admin/AdminLayout";
-import AdminProducts from "../pages/admin/AdminProducts";
-import AdminOrders from "../pages/admin/AdminOrders";
 
 // Individual wrapper components to provide cart functions
 const HomeWithCart = () => {
@@ -57,13 +58,6 @@ const router = () =>
           <Route path="/category/:category" element={<CategoryPageWithCart />} />
         </Route>
 
-        {/* Admin Panel */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminProducts />} />
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="orders" element={<AdminOrders />} />
-        </Route>
-
         {/* Auth pages (public) */}
         <Route 
           path="/signin" 
@@ -89,6 +83,14 @@ const router = () =>
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/profile" element={<UserInfo />} />
           <Route path="/orders" element={<MyOrders />} />
+        </Route>
+
+        {/* Admin routes */}
+        <Route element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/products" element={<AdminProducts />} />
+          <Route path="/admin/orders" element={<AdminOrders />} />
         </Route>
       </>
     ),

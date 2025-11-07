@@ -98,7 +98,8 @@ export const listProducts = async (req, res) => {
     if (/^contact\s+lenses$/i.test(requestedCategory)) {
       const [totalCount, data] = await Promise.all([
         ContactLens.countDocuments(mongoFilter),
-        ContactLens.find(mongoFilter).sort({ createdAt: -1 }).skip(skip).limit(limit)
+        ContactLens.find(mongoFilter).sort({ _id: 1 }).skip(skip).limit(limit)
+
       ]);
       const pagination = {
         currentPage: page,
@@ -113,7 +114,8 @@ export const listProducts = async (req, res) => {
     if (requestedCategory && !/^contact\s+lenses$/i.test(requestedCategory)) {
       const [totalCount, data] = await Promise.all([
         Product.countDocuments(mongoFilter),
-        Product.find(mongoFilter).sort({ createdAt: -1 }).skip(skip).limit(limit)
+        Product.find(mongoFilter).sort({ _id: 1 }).skip(skip).limit(limit)
+
       ]);
       const pagination = {
         currentPage: page,
@@ -135,7 +137,7 @@ export const listProducts = async (req, res) => {
       matchStage,
       addTypeProduct,
       { $unionWith: { coll: "contactlenses", pipeline: [matchStage, addTypeContact] } },
-      { $sort: { createdAt: -1 } },
+      { $sort: { _id: 1 } },
       { $facet: { data: [ { $skip: skip }, { $limit: limit } ], totalCount: [ { $count: "count" } ] } }
     ];
 

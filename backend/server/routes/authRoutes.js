@@ -71,6 +71,7 @@ router.post("/signin", async (req, res) => {
         id: user._id,
         name: displayName,
         email: user.email,
+        isAdmin: user.isAdmin || false,
         cart: user.cart,
         wishlist: user.wishlist
       }
@@ -84,7 +85,7 @@ router.post("/signin", async (req, res) => {
 router.get("/me", verifyToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.id)
-      .select("name email firstName lastName cart wishlist")
+      .select("name email firstName lastName cart wishlist isAdmin")
       .populate('cart.productId')
       .populate('wishlist');
 
@@ -96,6 +97,7 @@ router.get("/me", verifyToken, async (req, res) => {
       id: user._id,
       name: displayName,
       email: user.email,
+      isAdmin: user.isAdmin || false,
       cart: user.cart,
       wishlist: user.wishlist
     });

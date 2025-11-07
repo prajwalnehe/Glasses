@@ -1,57 +1,50 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const orderSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  items: [{
-    product: {
+const orderSchema = new mongoose.Schema(
+  {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
-      required: true
+      ref: "User",
+      required: true,
     },
-    quantity: {
+    items: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          min: 1,
+        },
+        price: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
+    totalAmount: {
       type: Number,
-      required: true
+      required: true,
     },
-    price: {
-      type: Number,
-      required: true
-    }
-  }],
-  shippingAddress: {
-    street: String,
-    city: String,
-    state: String,
-    pincode: String,
-    phone: String
-  },
-  totalAmount: {
-    type: Number,
-    required: true
-  },
-  paymentDetails: {
-    razorpayOrderId: String,
-    razorpayPaymentId: String,
-    razorpaySignature: String,
-    paymentMethod: {
+    status: {
       type: String,
-      enum: ['card', 'netbanking', 'upi', 'wallet', 'emi'],
-      required: true
-    }
+      enum: ["pending", "processing", "delivered", "cancel"],
+      default: "pending",
+    },
+    shippingAddress: {
+      name: String,
+      address: String,
+      city: String,
+      state: String,
+      zipCode: String,
+      phone: String,
+    },
   },
-  status: {
-    type: String,
-    enum: ['pending', 'processing', 'completed', 'delivered', 'cancelled'],
-    default: 'pending'
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+  { timestamps: true }
+);
 
-const Order = mongoose.model('Order', orderSchema);
+const Order = mongoose.model("Order", orderSchema);
 export default Order;
