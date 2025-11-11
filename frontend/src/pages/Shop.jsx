@@ -138,11 +138,7 @@ const Shop = ({ addToCart, addToWishlist }) => {
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
             Discover our complete collection of eyewear and contact lenses. Find the perfect style for every occasion.
           </p>
-          {pagination.totalProducts > 0 && (
-            <div className="mt-4 text-gray-500 font-medium">
-              {pagination.totalProducts} {pagination.totalProducts === 1 ? 'product' : 'products'} available
-            </div>
-          )}
+           
         </div>
 
         {loading ? (

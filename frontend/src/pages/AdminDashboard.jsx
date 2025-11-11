@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Package, ShoppingCart, Clock, CheckCircle, XCircle, TrendingUp, Eye, DollarSign } from "lucide-react";
+import {
+  Package,
+  ShoppingCart,
+  Clock,
+  CheckCircle,
+  TrendingUp,
+  Eye,
+  DollarSign,
+} from "lucide-react";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -23,42 +31,68 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      // Fetch all products
-      const productsRes = await fetch("http://localhost:4000/api/products");
-      const products = await productsRes.json();
-      const productsArray = Array.isArray(products) ? products : [];
+      // ✅ Fetch ALL products from admin endpoint (no pagination)
+      const productsRes = await fetch("http://localhost:4000/api/admin/products", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const productData = await productsRes.json();
 
-      // Fetch all orders
+      const productsArray = Array.isArray(productData)
+        ? productData
+        : Array.isArray(productData.products)
+        ? productData.products
+        : [];
+
+      // ✅ Sort products by MongoDB ObjectId (descending → newest first)
+      const sortedProducts = [...productsArray].sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+
+      // ✅ Fetch all orders
       const ordersRes = await fetch("http://localhost:4000/api/admin/orders", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      const orders = await ordersRes.ok ? await ordersRes.json() : [];
-      const ordersArray = Array.isArray(orders) ? orders : [];
+      const orderData = await ordersRes.json();
 
-      // Calculate stats
-      const contactLenses = productsArray.filter((p) => p.category === "Contact Lenses").length;
+      const ordersArray = Array.isArray(orderData)
+        ? orderData
+        : Array.isArray(orderData.orders)
+        ? orderData.orders
+        : [];
+
+      // ✅ Calculate product stats
+      const totalProducts = productsArray.length;
+      const contactLenses = sortedProducts.filter(
+        (p) => p.category === "Contact Lenses"
+      ).length;
+
+      // ✅ Calculate order stats
       const pending = ordersArray.filter((o) => o.status === "pending").length;
       const processing = ordersArray.filter((o) => o.status === "processing").length;
       const delivered = ordersArray.filter((o) => o.status === "delivered").length;
-      const cancelled = ordersArray.filter((o) => o.status === "cancel").length;
+      const completed = delivered;
+
       const revenue = ordersArray
         .filter((o) => o.status === "delivered")
         .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
+      // ✅ Update dashboard stats
       setStats({
-        products: productsArray.length,
+        products: totalProducts,
         contactLenses,
         orders: ordersArray.length,
         pending,
         processing,
         delivered,
-        completed: delivered,
+        completed,
         revenue,
       });
 
-      // Get recent orders (last 10)
+      // ✅ Show 10 most recent orders
       const recent = ordersArray
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 10);
@@ -98,100 +132,15 @@ const AdminDashboard = () => {
       <div className="max-w-7xl mx-auto">
         <h1 className="text-4xl font-bold text-gray-900 mb-8">Dashboard</h1>
 
-        {/* Stats Cards Grid */}
+        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Products Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium mb-1">Products</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.products}</p>
-              </div>
-              <div className="bg-blue-100 p-3 rounded-full">
-                <Package className="text-blue-600" size={28} />
-              </div>
-            </div>
-          </div>
-
-          {/* Contact Lenses Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium mb-1">Contact Lenses</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.contactLenses}</p>
-              </div>
-              <div className="bg-purple-100 p-3 rounded-full">
-                <Eye className="text-purple-600" size={28} />
-              </div>
-            </div>
-          </div>
-
-          {/* Orders Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-indigo-500 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium mb-1">Orders</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.orders}</p>
-              </div>
-              <div className="bg-indigo-100 p-3 rounded-full">
-                <ShoppingCart className="text-indigo-600" size={28} />
-              </div>
-            </div>
-          </div>
-
-          {/* Pending Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium mb-1">Pending</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.pending}</p>
-              </div>
-              <div className="bg-yellow-100 p-3 rounded-full">
-                <Clock className="text-yellow-600" size={28} />
-              </div>
-            </div>
-          </div>
-
-          {/* Processing Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium mb-1">Processing</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.processing}</p>
-              </div>
-              <div className="bg-blue-100 p-3 rounded-full">
-                <TrendingUp className="text-blue-600" size={28} />
-              </div>
-            </div>
-          </div>
-
-          {/* Delivered Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium mb-1">Delivered</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.delivered}</p>
-              </div>
-              <div className="bg-green-100 p-3 rounded-full">
-                <CheckCircle className="text-green-600" size={28} />
-              </div>
-            </div>
-          </div>
-
-          {/* Completed Card */}
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-emerald-500 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium mb-1">Completed</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.completed}</p>
-              </div>
-              <div className="bg-emerald-100 p-3 rounded-full">
-                <CheckCircle className="text-emerald-600" size={28} />
-              </div>
-            </div>
-          </div>
-
-          {/* Revenue Card */}
+          <StatCard title="Products" value={stats.products} icon={Package} color="blue" />
+          <StatCard title="Contact Lenses" value={stats.contactLenses} icon={Eye} color="purple" />
+          <StatCard title="Orders" value={stats.orders} icon={ShoppingCart} color="indigo" />
+          <StatCard title="Pending" value={stats.pending} icon={Clock} color="yellow" />
+          <StatCard title="Processing" value={stats.processing} icon={TrendingUp} color="blue" />
+          <StatCard title="Delivered" value={stats.delivered} icon={CheckCircle} color="green" />
+          <StatCard title="Completed" value={stats.completed} icon={CheckCircle} color="emerald" />
           <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between">
               <div>
@@ -205,7 +154,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Recent Orders Table */}
+        {/* Recent Orders */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-2xl font-bold text-gray-900">Recent Orders</h2>
@@ -235,12 +184,12 @@ const AdminDashboard = () => {
                 ) : (
                   recentOrders.map((order) => (
                     <tr key={order._id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
                         {new Date(order.createdAt).toLocaleDateString("en-GB", {
                           day: "2-digit",
                           month: "2-digit",
                           year: "numeric",
-                        })}
+                        })}{" "}
                         ,{" "}
                         {new Date(order.createdAt).toLocaleTimeString("en-US", {
                           hour: "2-digit",
@@ -249,7 +198,7 @@ const AdminDashboard = () => {
                           hour12: true,
                         })}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                      <td className="px-6 py-4 text-sm font-semibold text-gray-900 whitespace-nowrap">
                         ₹{order.totalAmount?.toLocaleString() || 0}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -258,7 +207,8 @@ const AdminDashboard = () => {
                             order.status
                           )}`}
                         >
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                          {order.status.charAt(0).toUpperCase() +
+                            order.status.slice(1)}
                         </span>
                       </td>
                     </tr>
@@ -273,5 +223,21 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+// ✅ Reusable Stat Card
+const StatCard = ({ title, value, icon: Icon, color }) => (
+  <div
+    className={`bg-white rounded-xl shadow-lg p-6 border-l-4 border-${color}-500 hover:shadow-xl transition-shadow`}
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-gray-600 text-sm font-medium mb-1">{title}</p>
+        <p className="text-3xl font-bold text-gray-900">{value}</p>
+      </div>
+      <div className={`bg-${color}-100 p-3 rounded-full`}>
+        <Icon className={`text-${color}-600`} size={28} />
+      </div>
+    </div>
+  </div>
+);
 
+export default AdminDashboard;
