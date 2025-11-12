@@ -26,19 +26,20 @@ app.use(express.json());
 // Configure environment variables
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.join(__dirname, ".env") });
+// Look for .env in the backend root directory (one level up from server directory)
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 // Environment variable checks
 if (!process.env.MONGO_URI) {
-  console.error("❌ Missing MONGO_URI in server/.env");
+  console.error("❌ Missing MONGO_URI in backend/.env");
   process.exit(1);
 }
 if (!process.env.JWT_SECRET) {
-  console.error("❌ Missing JWT_SECRET in server/.env");
+  console.error("❌ Missing JWT_SECRET in backend/.env");
   process.exit(1);
 }
 if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-  console.error("❌ Missing RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET in server/.env");
+  console.error("❌ Missing RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET in backend/.env");
   process.exit(1);
 }
 
