@@ -6,10 +6,11 @@
   "type": "module",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "nodemon server/index.js"
+    "dev": "nodemon server/index.js",
+    "build:frontend": "cd ../frontend && npm install && npm run build"
   },
   "keywords": [],
-  "author": "",
+  "author": "Prajwal Nehe",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -18,7 +19,8 @@
     "express": "^4.19.2",
     "faker": "^5.5.3",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.3.1"
+    "mongoose": "^8.3.1",
+    "path": "^0.12.7"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
