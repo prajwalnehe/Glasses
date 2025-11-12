@@ -31,7 +31,7 @@ const __dirname = path.dirname(__filename);
 // Load environment variables (from backend/.env)
 dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
-// Check for required environment variables
+// Check required environment variables
 const requiredEnv = ["MONGO_URI", "JWT_SECRET", "RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET"];
 requiredEnv.forEach((key) => {
   if (!process.env[key]) {
@@ -66,7 +66,9 @@ app.get("/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date() });
 });
 
-// Serve React frontend (for Render or production)
+// ------------------------------------------
+// 🧩 Serve React Frontend (for Render / Production)
+// ------------------------------------------
 const frontendPath = path.resolve(__dirname, "../../frontend/build");
 app.use(express.static(frontendPath));
 
@@ -74,13 +76,17 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(frontendPath, "index.html"));
 });
 
-// Error handling middleware
+// ------------------------------------------
+// 🧠 Error handling middleware
+// ------------------------------------------
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: "Something went wrong!", error: err.message });
+  console.error("Error:", err.stack);
+  res.status(500).json({ message: "Something broke!", error: err.message });
 });
 
-// Start the server
+// ------------------------------------------
+// 🚀 Start server
+// ------------------------------------------
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
